@@ -13,7 +13,7 @@ This package is a Composer metapackage: it contains no code. It requires the fou
 
 - It does: one command installs the four plugins at versions known to resolve together.
 - It does not: declare the bundles, import the configuration and the routes, run the migrations or schedule the tasks. Those steps stay manual, plugin by plugin, and are listed in [What is left to do by hand](#what-is-left-to-do-by-hand). No Symfony Flex recipe exists yet for this pack.
-- It does not guarantee a running shop: the composition is checked by Composer resolution (see [Checks](#checks)), not by a full installation.
+- It does not guarantee your shop: the pack is installed in a blank Sylius project by the continuous integration, with the gestures below and nothing else (see [Verified in CI](#verified-in-ci)); your own application may differ.
 
 ## Requirements
 
@@ -103,13 +103,29 @@ bin/console doctrine:migrations:migrate
 - the suggested plugin stays in `suggest` and out of `require`;
 - with `--lock`, after a Composer resolution, no locked plugin requires a plugin that is not in the pack (the failure names the dependency).
 
+`bin/check-gestures` verifies that the plugins of `etc/gestures.json` are exactly the members, and that every bundle and every configuration or routes resource of that file is in both READMEs and that no other one is.
+
 ```bash
 php tests/run.php                  # tests of the checker
 bin/check-composition              # composition of composer.json and of the READMEs
 bin/check-composition --lock=composer.lock
 ```
 
-The continuous integration also resolves the pack in a throwaway project (`composer update --no-install`) with Sylius 2.2 and 2.3.
+The continuous integration also resolves the pack in a throwaway project (`composer update --no-install`) with Sylius 2.2 and 2.3, and installs it (see below).
+
+## Verified in CI
+
+The gestures above are not only described: they are applied by `bin/apply-gestures` from `etc/gestures.json`, and `bin/check-gestures` fails when one of the two READMEs describes other gestures than that file.
+
+The `install` job creates a blank `sylius/sylius-standard` project (2.2.4 with Sylius `~2.2.9`, and 2.3.0 with Sylius `~2.3.0`), adds this repository as a Composer `path` repository (the pack is not republished for the test), requires it, applies the gestures, runs the migrations, then `lint:container` and `doctrine:schema:validate`. A failure names the plugin and the step: `FAIL plugin=… step=…` (`bin/step`). A second job installs this pack and the [Compliance and tooling pack](https://github.com/thibmonier/sylius-pack-compliance-tooling) in the same project and compiles the container (no service or route conflict).
+
+```bash
+php tests/gestures.php             # tests of the gestures, of their README check and of the step wrapper
+bin/check-gestures                 # etc/gestures.json against both READMEs
+bin/apply-gestures --project=DIR   # applies the gestures to a Symfony project
+```
+
+What the job does not cover: the "Other" column of the table (scheduled tasks, provider bridge and API key, HTTPS, worker), PHP 8.2 (Sylius-Standard requires PHP 8.3, so the job runs on PHP 8.3 although the plugins of the pack accept PHP 8.2), and Sylius 2.2 before 2.2.9.
 
 ## Maintenance
 

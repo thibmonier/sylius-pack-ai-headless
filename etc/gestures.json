@@ -1,0 +1,94 @@
+{
+    "pack": "tmonier/sylius-pack-ai-headless",
+    "migrations": "doctrine:migrations:migrate",
+    "plugins": [
+        {
+            "plugin": "tmonier/sylius-agentic-feeds-plugin",
+            "bundles": [
+                "Tmonier\\SyliusAgenticFeedsPlugin\\TmonierSyliusAgenticFeedsPlugin"
+            ],
+            "configuration": [
+                {
+                    "file": "tmonier_sylius_agentic_feeds",
+                    "resource": "@TmonierSyliusAgenticFeedsPlugin/config/config.yaml"
+                }
+            ],
+            "routes": [
+                {
+                    "file": "tmonier_sylius_agentic_feeds",
+                    "name": "tmonier_sylius_agentic_feeds",
+                    "resource": "@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml"
+                }
+            ]
+        },
+        {
+            "plugin": "tmonier/sylius-ai-catalog-copilot-plugin",
+            "bundles": [
+                "Symfony\\AI\\AiBundle\\AiBundle",
+                "Tmonier\\SyliusAiCatalogCopilotPlugin\\TmonierSyliusAiCatalogCopilotPlugin"
+            ],
+            "configuration": [
+                {
+                    "file": "tmonier_sylius_ai_catalog_copilot",
+                    "resource": "@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml"
+                }
+            ],
+            "routes": [
+                {
+                    "file": "tmonier_sylius_ai_catalog_copilot",
+                    "name": "tmonier_sylius_ai_catalog_copilot",
+                    "resource": "@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml"
+                }
+            ]
+        },
+        {
+            "plugin": "tmonier/sylius-b2b-mcp-plugin",
+            "bundles": [
+                "Symfony\\AI\\McpBundle\\McpBundle",
+                "Sylius\\McpServerPlugin\\SyliusMcpServerPlugin",
+                "Tmonier\\SyliusB2bMcpPlugin\\TmonierSyliusB2bMcpPlugin"
+            ],
+            "configuration": [
+                {
+                    "file": "tmonier_sylius_b2b_mcp",
+                    "resource": "@SyliusMcpServerPlugin/config/config.yaml"
+                },
+                {
+                    "file": "tmonier_sylius_b2b_mcp",
+                    "resource": "@TmonierSyliusB2bMcpPlugin/config/config.yaml"
+                }
+            ],
+            "routes": [
+                {
+                    "file": "tmonier_sylius_b2b_mcp",
+                    "name": "sylius_mcp_server",
+                    "resource": "@SyliusMcpServerPlugin/config/routes.yaml"
+                },
+                {
+                    "file": "tmonier_sylius_b2b_mcp",
+                    "name": "tmonier_sylius_b2b_mcp",
+                    "resource": "@TmonierSyliusB2bMcpPlugin/config/routes.yaml"
+                }
+            ]
+        },
+        {
+            "plugin": "tmonier/sylius-webhook-outbox-plugin",
+            "bundles": [
+                "Tmonier\\SyliusWebhookOutboxPlugin\\TmonierSyliusWebhookOutboxPlugin"
+            ],
+            "configuration": [
+                {
+                    "file": "tmonier_sylius_webhook_outbox",
+                    "resource": "@TmonierSyliusWebhookOutboxPlugin/config/config.yaml"
+                }
+            ],
+            "routes": [
+                {
+                    "file": "tmonier_sylius_webhook_outbox",
+                    "name": "tmonier_sylius_webhook_outbox",
+                    "resource": "@TmonierSyliusWebhookOutboxPlugin/config/routes.yaml"
+                }
+            ]
+        }
+    ]
+}

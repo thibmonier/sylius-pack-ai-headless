@@ -13,7 +13,7 @@ Ce paquet est un métapaquet Composer : il ne contient aucun code. Il requiert l
 
 - Il fait : une commande installe les quatre plugins à des versions dont la résolution ensemble est vérifiée.
 - Il ne fait pas : déclarer les bundles, importer la configuration et les routes, lancer les migrations ni planifier les tâches. Ces étapes restent manuelles, plugin par plugin, et sont listées dans [Ce qui reste à faire à la main](#ce-qui-reste-à-faire-à-la-main). Aucune recette Symfony Flex n'existe encore pour ce pack.
-- Il ne garantit pas une boutique qui démarre : la composition est vérifiée par la résolution de Composer (voir [Vérifications](#vérifications)), pas par une installation complète.
+- Il ne garantit pas votre boutique : l'intégration continue installe le pack dans un projet Sylius vierge, avec les gestes ci-dessous et rien d'autre (voir [Vérifié en CI](#vérifié-en-ci)) ; votre application peut différer.
 
 ## Prérequis
 
@@ -103,13 +103,29 @@ bin/console doctrine:migrations:migrate
 - le plugin suggéré reste dans `suggest` et hors de `require` ;
 - avec `--lock`, après une résolution Composer, aucun plugin verrouillé ne requiert un plugin absent du pack (l'échec nomme la dépendance).
 
+`bin/check-gestures` vérifie que les plugins de `etc/gestures.json` sont exactement les membres, et que chaque bundle et chaque ressource de configuration ou de routes de ce fichier figure dans les deux README, sans autre.
+
 ```bash
 php tests/run.php                  # tests du vérificateur
 bin/check-composition              # composition de composer.json et des README
 bin/check-composition --lock=composer.lock
 ```
 
-L'intégration continue résout aussi le pack dans un projet jetable (`composer update --no-install`) avec Sylius 2.2 et 2.3.
+L'intégration continue résout aussi le pack dans un projet jetable (`composer update --no-install`) avec Sylius 2.2 et 2.3, et l'installe (voir ci-dessous).
+
+## Vérifié en CI
+
+Les gestes ci-dessus ne sont pas seulement décrits : ils sont appliqués par `bin/apply-gestures` à partir de `etc/gestures.json`, et `bin/check-gestures` échoue quand l'un des deux README décrit d'autres gestes que ce fichier.
+
+Le job `install` crée un projet `sylius/sylius-standard` vierge (2.2.4 avec Sylius `~2.2.9`, et 2.3.0 avec Sylius `~2.3.0`), ajoute ce dépôt comme dépôt Composer de type `path` (le pack n'est pas republié pour l'essai), le requiert, applique les gestes, lance les migrations, puis `lint:container` et `doctrine:schema:validate`. Un échec nomme le plugin et l'étape : `FAIL plugin=… step=…` (`bin/step`). Un second job installe ce pack et le [pack Conformité et outillage](https://github.com/thibmonier/sylius-pack-compliance-tooling) dans le même projet et compile le conteneur (aucun conflit de service ni de route).
+
+```bash
+php tests/gestures.php             # tests des gestes, de leur contrôle contre les README et de l'enveloppe d'étape
+bin/check-gestures                 # etc/gestures.json contre les deux README
+bin/apply-gestures --project=DIR   # applique les gestes à un projet Symfony
+```
+
+Ce que le job ne couvre pas : la colonne « Autre » du tableau (tâches planifiées, pont du fournisseur et clé d'API, HTTPS, worker), PHP 8.2 (Sylius-Standard exige PHP 8.3, donc le job tourne sur PHP 8.3 alors que les plugins du pack acceptent PHP 8.2) et Sylius 2.2 avant 2.2.9.
 
 ## Maintenance
 
