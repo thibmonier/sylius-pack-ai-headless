@@ -13,7 +13,7 @@ This package is a Composer metapackage: it contains no code. It requires the fou
 
 - It does: one command installs the four plugins at versions known to resolve together.
 - It does not: declare the bundles, import the configuration and the routes, run the migrations or schedule the tasks. Those steps stay manual, plugin by plugin, and are listed in [What is left to do by hand](#what-is-left-to-do-by-hand). No Symfony Flex recipe exists yet for this pack.
-- It does not guarantee a running shop: the composition is checked by Composer resolution (see [Checks](#checks)), not by a full installation.
+- It does not guarantee your shop: the pack is installed in a blank Sylius project by the continuous integration, with the gestures below and nothing else (see [Verified in CI](#verified-in-ci)); your own application may differ.
 
 ## Requirements
 
@@ -51,19 +51,28 @@ For each plugin, in this order. The detailed steps, with their options, are in t
 | Plugin | Bundles to register in `config/bundles.php` | Configuration (`config/packages/`) | Routes (`config/routes/`) | Migrations | Other |
 |--------|----------------------------------------------|------------------------------------|---------------------------|------------|-------|
 | agentic-feeds | `Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin` | `@TmonierSyliusAgenticFeedsPlugin/config/config.yaml` | `@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml` | yes | schedule `tmonier:feeds:generate` (cron) |
-| ai-catalog-copilot | `Symfony\AI\AiBundle\AiBundle` and `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | yes (2 tables) | install the bridge of your provider (`symfony/ai-*-platform`) and set its API key in an environment variable |
-| b2b-mcp | `Symfony\AI\McpBundle\McpBundle`, `Sylius\McpServerPlugin\SyliusMcpServerPlugin` and `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@SyliusMcpServerPlugin/config/config.yaml` and `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@SyliusMcpServerPlugin/config/routes.yaml` and `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | yes | HTTPS on a public host name, trusted proxies, a dedicated encryption key, daily `tmonier:b2b-mcp:purge` |
+| ai-catalog-copilot | `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | yes (2 tables) | install the bridge of your provider (`symfony/ai-*-platform`) and set its API key in an environment variable |
+| b2b-mcp | `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | yes | `symfony/lock` (see below), HTTPS on a public host name, trusted proxies, a dedicated encryption key, daily `tmonier:b2b-mcp:purge` |
 | webhook-outbox | `Tmonier\SyliusWebhookOutboxPlugin\TmonierSyliusWebhookOutboxPlugin` | `@TmonierSyliusWebhookOutboxPlugin/config/config.yaml` | `@TmonierSyliusWebhookOutboxPlugin/config/routes.yaml` | yes | run the delivery worker, schedule `tmonier:webhook:purge`, set `framework.router.default_uri` |
 
-Totals for the pack: 7 bundles (some may already be registered in your shop), 5 configuration imports, 5 route imports, 4 sets of migrations and 3 scheduled tasks or processes.
+Totals for the pack: 4 bundles, 4 configuration imports, 4 route imports, 4 sets of migrations and 3 scheduled tasks or processes. Three more bundles, and the configuration and routes of the MCP server plugin, are done by the Symfony Flex recipes of other packages (next section).
+
+### Done by the recipes of other packages
+
+In a project that uses Symfony Flex (Sylius-Standard does), `composer require` runs the recipes of the packages the plugins depend on. They register `Symfony\AI\AiBundle\AiBundle` (`symfony/ai-bundle`), `Symfony\AI\McpBundle\McpBundle` (`symfony/mcp-bundle`) and `Sylius\McpServerPlugin\SyliusMcpServerPlugin` (`sylius/mcp-server-plugin`), and import `@SyliusMcpServerPlugin/config/config.yaml` and `@SyliusMcpServerPlugin/config/routes.yaml`. Do not repeat them: importing the routes of the MCP server plugin twice makes the router fail ("Do not add the mcp loader twice"). Without Flex recipes, add them by hand, as the README of the MCP plugin describes. The continuous integration checks that the recipes ran (`bin/apply-gestures --verify-flex`).
+
+### Composer packages
+
+The rate limiter of the MCP plugin needs the Symfony Lock component, which the plugin does not require itself and which a new Sylius-Standard project does not contain:
+
+```bash
+composer require symfony/lock
+```
 
 ### Bundles
 
 ```php
 // config/bundles.php
-Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
-Symfony\AI\McpBundle\McpBundle::class => ['all' => true],
-Sylius\McpServerPlugin\SyliusMcpServerPlugin::class => ['all' => true],
 Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin::class => ['all' => true],
 Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin::class => ['all' => true],
 Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin::class => ['all' => true],
@@ -86,8 +95,6 @@ tmonier_sylius_agentic_feeds:
     resource: "@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml"
 ```
 
-The MCP plugin imports the configuration and the routes of both `SyliusMcpServerPlugin` and its own plugin: see its README.
-
 ### Migrations
 
 ```bash
@@ -103,13 +110,31 @@ bin/console doctrine:migrations:migrate
 - the suggested plugin stays in `suggest` and out of `require`;
 - with `--lock`, after a Composer resolution, no locked plugin requires a plugin that is not in the pack (the failure names the dependency).
 
+`bin/check-gestures` verifies that the plugins of `etc/gestures.json` are exactly the members, and that every bundle and every configuration or routes resource of that file is in both READMEs and that no other one is.
+
 ```bash
 php tests/run.php                  # tests of the checker
 bin/check-composition              # composition of composer.json and of the READMEs
 bin/check-composition --lock=composer.lock
 ```
 
-The continuous integration also resolves the pack in a throwaway project (`composer update --no-install`) with Sylius 2.2 and 2.3.
+The continuous integration also resolves the pack in a throwaway project (`composer update --no-install`) with Sylius 2.2 and 2.3, and installs it (see below).
+
+## Verified in CI
+
+The gestures above are not only described: they are applied by `bin/apply-gestures` from `etc/gestures.json`, and `bin/check-gestures` fails when one of the two READMEs describes other gestures than that file.
+
+The `install` job creates a blank `sylius/sylius-standard` project (2.2.4 with Sylius `~2.2.9`, and 2.3.0 with Sylius `~2.3.0`), adds this repository as a Composer `path` repository (the pack is not republished for the test), requires it, applies the gestures, runs the migrations, then `lint:container` and `doctrine:schema:validate`. A failure names the plugin and the step: `FAIL plugin=… step=…` (`bin/step`). A second job installs this pack and the [Compliance and tooling pack](https://github.com/thibmonier/sylius-pack-compliance-tooling) in the same project and compiles the container (no service or route conflict).
+
+```bash
+php tests/gestures.php             # tests of the gestures, of their README check and of the step wrapper
+bin/check-gestures                 # etc/gestures.json against both READMEs
+bin/apply-gestures --project=DIR   # applies the gestures to a Symfony project
+```
+
+Two adjustments are written in the workflow rather than hidden. The 2.2.4 skeleton declares `FOSRestBundle` and its configuration file although Sylius 2.2.12 no longer installs the package: the job removes both when the package is absent. The schema of a blank Sylius-Standard project is itself out of sync after its migrations (tables of the Mollie, refund, payment request and messenger bundles), so `doctrine:schema:validate --skip-sync` checks the mapping and the synchronisation is checked on the tables of the pack only.
+
+What the job does not cover: the "Other" column of the table (scheduled tasks, provider bridge and API key, HTTPS, worker), PHP 8.2 (Sylius-Standard requires PHP 8.3, so the job runs on PHP 8.3 although the plugins of the pack accept PHP 8.2), and Sylius 2.2 before 2.2.9.
 
 ## Maintenance
 
