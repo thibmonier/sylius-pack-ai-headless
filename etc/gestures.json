@@ -43,6 +43,9 @@
         },
         {
             "plugin": "tmonier/sylius-b2b-mcp-plugin",
+            "composer": [
+                "symfony/lock"
+            ],
             "bundles": [
                 "Symfony\\AI\\McpBundle\\McpBundle",
                 "Sylius\\McpServerPlugin\\SyliusMcpServerPlugin",

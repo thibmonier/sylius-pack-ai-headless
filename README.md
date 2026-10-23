@@ -52,10 +52,18 @@ For each plugin, in this order. The detailed steps, with their options, are in t
 |--------|----------------------------------------------|------------------------------------|---------------------------|------------|-------|
 | agentic-feeds | `Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin` | `@TmonierSyliusAgenticFeedsPlugin/config/config.yaml` | `@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml` | yes | schedule `tmonier:feeds:generate` (cron) |
 | ai-catalog-copilot | `Symfony\AI\AiBundle\AiBundle` and `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | yes (2 tables) | install the bridge of your provider (`symfony/ai-*-platform`) and set its API key in an environment variable |
-| b2b-mcp | `Symfony\AI\McpBundle\McpBundle`, `Sylius\McpServerPlugin\SyliusMcpServerPlugin` and `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@SyliusMcpServerPlugin/config/config.yaml` and `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@SyliusMcpServerPlugin/config/routes.yaml` and `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | yes | HTTPS on a public host name, trusted proxies, a dedicated encryption key, daily `tmonier:b2b-mcp:purge` |
+| b2b-mcp | `Symfony\AI\McpBundle\McpBundle`, `Sylius\McpServerPlugin\SyliusMcpServerPlugin` and `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@SyliusMcpServerPlugin/config/config.yaml` and `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@SyliusMcpServerPlugin/config/routes.yaml` and `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | yes | `symfony/lock` (see below), HTTPS on a public host name, trusted proxies, a dedicated encryption key, daily `tmonier:b2b-mcp:purge` |
 | webhook-outbox | `Tmonier\SyliusWebhookOutboxPlugin\TmonierSyliusWebhookOutboxPlugin` | `@TmonierSyliusWebhookOutboxPlugin/config/config.yaml` | `@TmonierSyliusWebhookOutboxPlugin/config/routes.yaml` | yes | run the delivery worker, schedule `tmonier:webhook:purge`, set `framework.router.default_uri` |
 
 Totals for the pack: 7 bundles (some may already be registered in your shop), 5 configuration imports, 5 route imports, 4 sets of migrations and 3 scheduled tasks or processes.
+
+### Composer packages
+
+The rate limiter of the MCP plugin needs the Symfony Lock component, which the plugin does not require itself and which a new Sylius-Standard project does not contain:
+
+```bash
+composer require symfony/lock
+```
 
 ### Bundles
 
