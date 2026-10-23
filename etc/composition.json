@@ -1,0 +1,21 @@
+{
+    "pack": "tmonier/sylius-pack-ai-headless",
+    "members": [
+        "tmonier/sylius-agentic-feeds-plugin",
+        "tmonier/sylius-ai-catalog-copilot-plugin",
+        "tmonier/sylius-b2b-mcp-plugin",
+        "tmonier/sylius-webhook-outbox-plugin"
+    ],
+    "suggest": [
+        "tmonier/sylius-audit-log-plugin"
+    ],
+    "excluded": [
+        "tmonier/sylius-admin-order-creation-plugin",
+        "tmonier/sylius-company-accounts-plugin",
+        "tmonier/sylius-purchase-approval-plugin",
+        "tmonier/sylius-quick-order-plugin",
+        "tmonier/sylius-quote-request-plugin",
+        "tmonier/sylius-tier-pricing-plugin",
+        "tmonier/sylius-withdrawal-plugin"
+    ]
+}
