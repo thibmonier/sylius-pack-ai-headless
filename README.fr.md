@@ -51,11 +51,15 @@ Pour chaque plugin, dans cet ordre. Les étapes détaillées, avec leurs options
 | Plugin | Bundles à déclarer dans `config/bundles.php` | Configuration (`config/packages/`) | Routes (`config/routes/`) | Migrations | Autre |
 |--------|-----------------------------------------------|------------------------------------|---------------------------|------------|-------|
 | agentic-feeds | `Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin` | `@TmonierSyliusAgenticFeedsPlugin/config/config.yaml` | `@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml` | oui | planifier `tmonier:feeds:generate` (cron) |
-| ai-catalog-copilot | `Symfony\AI\AiBundle\AiBundle` et `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | oui (2 tables) | installer le pont du fournisseur choisi (`symfony/ai-*-platform`) et renseigner sa clé d'API dans une variable d'environnement |
-| b2b-mcp | `Symfony\AI\McpBundle\McpBundle`, `Sylius\McpServerPlugin\SyliusMcpServerPlugin` et `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@SyliusMcpServerPlugin/config/config.yaml` et `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@SyliusMcpServerPlugin/config/routes.yaml` et `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | oui | `symfony/lock` (voir ci-dessous), HTTPS sur un nom d'hôte public, proxys de confiance, clé de chiffrement dédiée, `tmonier:b2b-mcp:purge` chaque jour |
+| ai-catalog-copilot | `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | oui (2 tables) | installer le pont du fournisseur choisi (`symfony/ai-*-platform`) et renseigner sa clé d'API dans une variable d'environnement |
+| b2b-mcp | `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | oui | `symfony/lock` (voir ci-dessous), HTTPS sur un nom d'hôte public, proxys de confiance, clé de chiffrement dédiée, `tmonier:b2b-mcp:purge` chaque jour |
 | webhook-outbox | `Tmonier\SyliusWebhookOutboxPlugin\TmonierSyliusWebhookOutboxPlugin` | `@TmonierSyliusWebhookOutboxPlugin/config/config.yaml` | `@TmonierSyliusWebhookOutboxPlugin/config/routes.yaml` | oui | lancer le worker d'envoi, planifier `tmonier:webhook:purge`, définir `framework.router.default_uri` |
 
-Total pour le pack : 7 bundles (certains peuvent déjà être déclarés dans votre boutique), 5 imports de configuration, 5 imports de routes, 4 jeux de migrations et 3 tâches planifiées ou processus.
+Total pour le pack : 4 bundles, 4 imports de configuration, 4 imports de routes, 4 jeux de migrations et 3 tâches planifiées ou processus. Trois autres bundles, ainsi que la configuration et les routes du plugin de serveur MCP, sont faits par les recettes Symfony Flex d'autres paquets (section suivante).
+
+### Fait par les recettes d'autres paquets
+
+Dans un projet qui utilise Symfony Flex (Sylius-Standard en utilise), `composer require` exécute les recettes des paquets dont dépendent les plugins. Elles déclarent `Symfony\AI\AiBundle\AiBundle` (`symfony/ai-bundle`), `Symfony\AI\McpBundle\McpBundle` (`symfony/mcp-bundle`) et `Sylius\McpServerPlugin\SyliusMcpServerPlugin` (`sylius/mcp-server-plugin`), et importent `@SyliusMcpServerPlugin/config/config.yaml` et `@SyliusMcpServerPlugin/config/routes.yaml`. Ne pas les répéter : importer deux fois les routes du plugin de serveur MCP fait échouer le routeur (« Do not add the mcp loader twice »). Sans recettes Flex, les ajouter à la main, comme le décrit le README du plugin MCP. L'intégration continue vérifie que les recettes ont bien été exécutées (`bin/apply-gestures --verify-flex`).
 
 ### Paquets Composer
 
@@ -69,9 +73,6 @@ composer require symfony/lock
 
 ```php
 // config/bundles.php
-Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
-Symfony\AI\McpBundle\McpBundle::class => ['all' => true],
-Sylius\McpServerPlugin\SyliusMcpServerPlugin::class => ['all' => true],
 Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin::class => ['all' => true],
 Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin::class => ['all' => true],
 Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin::class => ['all' => true],
@@ -93,8 +94,6 @@ imports:
 tmonier_sylius_agentic_feeds:
     resource: "@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml"
 ```
-
-Le plugin MCP importe la configuration et les routes de `SyliusMcpServerPlugin` et de son propre plugin : voir son README.
 
 ### Migrations
 

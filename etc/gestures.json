@@ -23,8 +23,13 @@
         },
         {
             "plugin": "tmonier/sylius-ai-catalog-copilot-plugin",
+            "flex": {
+                "bundles": [
+                    "Symfony\\AI\\AiBundle\\AiBundle"
+                ],
+                "resources": []
+            },
             "bundles": [
-                "Symfony\\AI\\AiBundle\\AiBundle",
                 "Tmonier\\SyliusAiCatalogCopilotPlugin\\TmonierSyliusAiCatalogCopilotPlugin"
             ],
             "configuration": [
@@ -46,27 +51,26 @@
             "composer": [
                 "symfony/lock"
             ],
+            "flex": {
+                "bundles": [
+                    "Symfony\\AI\\McpBundle\\McpBundle",
+                    "Sylius\\McpServerPlugin\\SyliusMcpServerPlugin"
+                ],
+                "resources": [
+                    "@SyliusMcpServerPlugin/config/config.yaml",
+                    "@SyliusMcpServerPlugin/config/routes.yaml"
+                ]
+            },
             "bundles": [
-                "Symfony\\AI\\McpBundle\\McpBundle",
-                "Sylius\\McpServerPlugin\\SyliusMcpServerPlugin",
                 "Tmonier\\SyliusB2bMcpPlugin\\TmonierSyliusB2bMcpPlugin"
             ],
             "configuration": [
-                {
-                    "file": "tmonier_sylius_b2b_mcp",
-                    "resource": "@SyliusMcpServerPlugin/config/config.yaml"
-                },
                 {
                     "file": "tmonier_sylius_b2b_mcp",
                     "resource": "@TmonierSyliusB2bMcpPlugin/config/config.yaml"
                 }
             ],
             "routes": [
-                {
-                    "file": "tmonier_sylius_b2b_mcp",
-                    "name": "sylius_mcp_server",
-                    "resource": "@SyliusMcpServerPlugin/config/routes.yaml"
-                },
                 {
                     "file": "tmonier_sylius_b2b_mcp",
                     "name": "tmonier_sylius_b2b_mcp",
