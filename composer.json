@@ -1,0 +1,26 @@
+{
+    "name": "tmonier/sylius-pack-ai-headless",
+    "type": "metapackage",
+    "description": "AI and headless pack for Sylius 2: product feeds for AI assistants, AI catalog copilot, B2B tools for the Sylius MCP server and reliable outgoing webhooks, installed with one command",
+    "keywords": [
+        "ecommerce",
+        "sylius",
+        "sylius-plugin",
+        "symfony",
+        "metapackage",
+        "ai",
+        "mcp",
+        "webhooks",
+        "headless"
+    ],
+    "license": "MIT",
+    "require": {
+        "tmonier/sylius-agentic-feeds-plugin": "^1.0",
+        "tmonier/sylius-ai-catalog-copilot-plugin": "^1.0",
+        "tmonier/sylius-b2b-mcp-plugin": "^1.2",
+        "tmonier/sylius-webhook-outbox-plugin": "^1.0"
+    },
+    "suggest": {
+        "tmonier/sylius-audit-log-plugin": "Journal of admin changes; records the product change made when an AI suggestion is accepted and mirrors the MCP tool calls"
+    }
+}
