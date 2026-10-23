@@ -186,6 +186,8 @@ jobs:
               run: |
                   cd "$RUNNER_TEMP/project"
                   bin/console doctrine:schema:update --dump-sql || true
+                  ls config/routes config/packages
+                  grep -l "type: mcp" -r config || true
 
     together:
         runs-on: ubuntu-latest
@@ -299,3 +301,9 @@ jobs:
                   "$STEP" --plugin=auto --step=debug-router -- bin/console debug:router --format=json --no-interaction > "$RUNNER_TEMP/routes.json"
                   "$STEP" --plugin=auto --step=route-conflicts -- php "$GITHUB_WORKSPACE/pack/bin/check-routes" --file="$RUNNER_TEMP/routes.json" --prefixes=tmonier_,sylius_invoicing_
 
+            - name: Show the routes and the project files on failure
+              if: failure()
+              run: |
+                  cd "$RUNNER_TEMP/project"
+                  ls config/routes config/packages
+                  grep -rn "type: mcp" config vendor/sylius/mcp-server-plugin/config vendor/symfony/mcp-bundle/config 2>/dev/null || true
