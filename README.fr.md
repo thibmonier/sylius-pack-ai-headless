@@ -52,7 +52,7 @@ Pour chaque plugin, dans cet ordre. Les étapes détaillées, avec leurs options
 |--------|-----------------------------------------------|------------------------------------|---------------------------|------------|-------|
 | agentic-feeds | `Tmonier\SyliusAgenticFeedsPlugin\TmonierSyliusAgenticFeedsPlugin` | `@TmonierSyliusAgenticFeedsPlugin/config/config.yaml` | `@TmonierSyliusAgenticFeedsPlugin/config/routes.yaml` | oui | planifier `tmonier:feeds:generate` (cron) |
 | ai-catalog-copilot | `Tmonier\SyliusAiCatalogCopilotPlugin\TmonierSyliusAiCatalogCopilotPlugin` | `@TmonierSyliusAiCatalogCopilotPlugin/config/config.yaml` | `@TmonierSyliusAiCatalogCopilotPlugin/config/routes.yaml` | oui (2 tables) | installer le pont du fournisseur choisi (`symfony/ai-*-platform`) et renseigner sa clé d'API dans une variable d'environnement |
-| b2b-mcp | `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | oui | `symfony/lock` (voir ci-dessous), HTTPS sur un nom d'hôte public, proxys de confiance, clé de chiffrement dédiée, `tmonier:b2b-mcp:purge` chaque jour |
+| b2b-mcp | `Tmonier\SyliusB2bMcpPlugin\TmonierSyliusB2bMcpPlugin` | `@TmonierSyliusB2bMcpPlugin/config/config.yaml` | `@TmonierSyliusB2bMcpPlugin/config/routes.yaml` | oui | HTTPS sur un nom d'hôte public, proxys de confiance, clé de chiffrement dédiée, `tmonier:b2b-mcp:purge` chaque jour |
 | webhook-outbox | `Tmonier\SyliusWebhookOutboxPlugin\TmonierSyliusWebhookOutboxPlugin` | `@TmonierSyliusWebhookOutboxPlugin/config/config.yaml` | `@TmonierSyliusWebhookOutboxPlugin/config/routes.yaml` | oui | lancer le worker d'envoi, planifier `tmonier:webhook:purge`, définir `framework.router.default_uri` |
 
 Total pour le pack : 4 bundles, 4 imports de configuration, 4 imports de routes, 4 jeux de migrations et 3 tâches planifiées ou processus. Trois autres bundles, ainsi que la configuration et les routes du plugin de serveur MCP, sont faits par les recettes Symfony Flex d'autres paquets (section suivante).
@@ -60,14 +60,6 @@ Total pour le pack : 4 bundles, 4 imports de configuration, 4 imports de routes,
 ### Fait par les recettes d'autres paquets
 
 Dans un projet qui utilise Symfony Flex (Sylius-Standard en utilise), `composer require` exécute les recettes des paquets dont dépendent les plugins. Elles déclarent `Symfony\AI\AiBundle\AiBundle` (`symfony/ai-bundle`), `Symfony\AI\McpBundle\McpBundle` (`symfony/mcp-bundle`) et `Sylius\McpServerPlugin\SyliusMcpServerPlugin` (`sylius/mcp-server-plugin`), et importent `@SyliusMcpServerPlugin/config/config.yaml` et `@SyliusMcpServerPlugin/config/routes.yaml`. Ne pas les répéter : importer deux fois les routes du plugin de serveur MCP fait échouer le routeur (« Do not add the mcp loader twice »). Sans recettes Flex, les ajouter à la main, comme le décrit le README du plugin MCP. L'intégration continue vérifie que les recettes ont bien été exécutées (`bin/apply-gestures --verify-flex`).
-
-### Paquets Composer
-
-Le limiteur de débit du plugin MCP a besoin du composant Lock de Symfony, que le plugin ne requiert pas lui-même et qu'un projet Sylius-Standard neuf ne contient pas :
-
-```bash
-composer require symfony/lock
-```
 
 ### Bundles
 
