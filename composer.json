@@ -17,7 +17,7 @@
     "require": {
         "tmonier/sylius-agentic-feeds-plugin": "^1.0",
         "tmonier/sylius-ai-catalog-copilot-plugin": "^1.0",
-        "tmonier/sylius-b2b-mcp-plugin": "^1.2",
+        "tmonier/sylius-b2b-mcp-plugin": "^1.2.3",
         "tmonier/sylius-webhook-outbox-plugin": "^1.0"
     },
     "suggest": {
