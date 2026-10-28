@@ -22,5 +22,23 @@
     },
     "suggest": {
         "tmonier/sylius-audit-log-plugin": "Journal of admin changes; records the product change made when an AI suggestion is accepted and mirrors the MCP tool calls"
+    },
+    "config": {
+        "allow-plugins": {},
+        "policy": {
+            "advisories": {
+                "block": true,
+                "audit": "fail"
+            },
+            "abandoned": {
+                "block": false,
+                "audit": "report"
+            },
+            "malware": {
+                "block": true,
+                "block-scope": "all",
+                "audit": "fail"
+            }
+        }
     }
 }
